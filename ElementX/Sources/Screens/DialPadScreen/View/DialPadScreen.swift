@@ -33,6 +33,7 @@ struct DialPadScreen: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 60)
                 .padding(.horizontal, 20)
+                .accessibilityIdentifier(A11yIdentifiers.dialPadScreen.phoneNumberDisplay)
         }
         .padding(.vertical, 32)
     }
@@ -87,6 +88,7 @@ struct DialPadScreen: View {
             .clipShape(Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("\(A11yIdentifiers.dialPadScreen.digitButton)-\(digit)")
     }
     
     private var dialButton: some View {
@@ -103,6 +105,7 @@ struct DialPadScreen: View {
                     .foregroundColor(.compound.iconPrimary)
                     .frame(width: 50, height: 50)
             }
+            .accessibilityIdentifier(A11yIdentifiers.dialPadScreen.deleteButton)
             .padding(.bottom, 8)
             
             Button {
@@ -116,6 +119,7 @@ struct DialPadScreen: View {
                     .clipShape(Circle())
             }
             .disabled(!context.viewState.canDial)
+            .accessibilityIdentifier(A11yIdentifiers.dialPadScreen.dialButton)
             .padding(.bottom, 40)
         }
     }

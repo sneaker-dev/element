@@ -104,6 +104,7 @@ struct StartChatScreen: View {
             ListRow(label: .default(title: "Dial",
                                     systemIcon: .phone),
                     kind: .navigationLink { context.send(viewAction: .openDialPad) })
+                .accessibilityIdentifier("start_chat-dial_pad")
         }
     }
     

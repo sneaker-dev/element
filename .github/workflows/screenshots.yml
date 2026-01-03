@@ -36,25 +36,31 @@ jobs:
           CODE_SIGN_IDENTITY="" \
           CODE_SIGNING_REQUIRED=NO
 
-    - name: Install and Launch
+    - name: Run UI Tests
       run: |
-        APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "ElementX.app" -type d | head -1)
-        xcrun simctl install booted "$APP_PATH"
-        xcrun simctl launch booted io.element.elementx
-        sleep 8
+        xcodebuild test \
+          -scheme ElementX \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone17,OS=26.1' \
+          -only-testing:UITests/DialPadTests \
+          -skipPackagePluginValidation \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO || true
 
-    - name: Take Screenshots
+    - name: Copy Screenshots
       run: |
         mkdir -p screenshots
-        xcrun simctl io booted screenshot screenshots/1-home.png
-        sleep 2
-        xcrun simctl io booted screenshot screenshots/2-start-chat.png
-        sleep 2
-        xcrun simctl io booted screenshot screenshots/3-dial-pad-empty.png
-        sleep 2
-        xcrun simctl io booted screenshot screenshots/4-dial-pad-number.png
-        sleep 2
-        xcrun simctl io booted screenshot screenshots/5-room-created.png
+        find UITests/Sources/__Snapshots__ -name "*dialPad*.png" -exec cp {} screenshots/ \; || true
+        if [ ! -z "$(ls -A screenshots)" ]; then
+          echo "Screenshots found"
+        else
+          echo "No screenshots found, taking manual ones"
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "ElementX.app" -type d | head -1)
+          xcrun simctl install booted "$APP_PATH" || true
+          xcrun simctl launch booted io.element.elementx || true
+          sleep 5
+          xcrun simctl io booted screenshot screenshots/1-manual.png || true
+        fi
 
     - name: Upload Screenshots
       uses: actions/upload-artifact@v4
