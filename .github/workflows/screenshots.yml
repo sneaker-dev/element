@@ -18,7 +18,15 @@ jobs:
 
     - name: Setup
       run: |
-        brew install xcodegen swiftlint swiftformat git-lfs pkl || true
+        unset HOMEBREW_NO_INSTALL_FROM_API
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        brew update
+        brew install xcodegen swiftlint swiftformat git-lfs pkl ruby || true
+        gem install bundler
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+        git lfs install
+        pkl eval -o Secrets/Secrets.swift Secrets/Secrets.pkl || echo "Secrets generation skipped"
         swift run tools setup-project
 
     - name: Create Simulator
