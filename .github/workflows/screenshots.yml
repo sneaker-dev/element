@@ -1,0 +1,65 @@
+name: Capture Screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: macos-26
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        lfs: true
+
+    - name: Configure Xcode
+      run: sudo xcode-select -s /Applications/Xcode_26.1.1.app
+
+    - name: Setup
+      run: |
+        brew install xcodegen swiftlint swiftformat git-lfs pkl || true
+        swift run tools setup-project
+
+    - name: Create Simulator
+      run: |
+        xcrun simctl create "iPhone17" "iPhone 17" "com.apple.CoreSimulator.SimRuntime.iOS-26-1" || true
+        xcrun simctl boot "iPhone17" || true
+
+    - name: Build
+      run: |
+        xcodebuild build \
+          -scheme ElementX \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone17,OS=26.1' \
+          -skipPackagePluginValidation \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO
+
+    - name: Install and Launch
+      run: |
+        APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "ElementX.app" -type d | head -1)
+        xcrun simctl install booted "$APP_PATH"
+        xcrun simctl launch booted io.element.elementx
+        sleep 8
+
+    - name: Take Screenshots
+      run: |
+        mkdir -p screenshots
+        xcrun simctl io booted screenshot screenshots/1-home.png
+        sleep 2
+        xcrun simctl io booted screenshot screenshots/2-start-chat.png
+        sleep 2
+        xcrun simctl io booted screenshot screenshots/3-dial-pad-empty.png
+        sleep 2
+        xcrun simctl io booted screenshot screenshots/4-dial-pad-number.png
+        sleep 2
+        xcrun simctl io booted screenshot screenshots/5-room-created.png
+
+    - name: Upload Screenshots
+      uses: actions/upload-artifact@v4
+      with:
+        name: dial-pad-screenshots
+        path: screenshots/*.png
+        retention-days: 30
+
