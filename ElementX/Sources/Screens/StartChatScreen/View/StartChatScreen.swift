@@ -168,7 +168,7 @@ struct StartChatScreen_Previews: PreviewProvider, TestablePreview {
     static let viewModel = {
         let appSettings = AppSettings()
         appSettings.publicSearchEnabled = true
-        let userSession = UserSessionMock(.init(clientProxy: ClientProxyMock(.init(userID: "@userid:example.com"))))
+        let userSession = UserSessionMock(UserSessionMockConfiguration(clientProxy: ClientProxyMock(ClientProxyMockConfiguration(userID: "@userid:example.com"))))
         let userDiscoveryService = UserDiscoveryServiceMock()
         userDiscoveryService.searchProfilesWithReturnValue = .success([.mockAlice])
         let viewModel = StartChatScreenViewModel(userSession: userSession,
